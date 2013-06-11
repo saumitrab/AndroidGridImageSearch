@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -102,7 +103,6 @@ public class SearchActivity extends Activity {
     
     public void loadImages(String query) {
     	AsyncHttpClient ahClient = new AsyncHttpClient();
-    	//https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=dog
     	
     	int fetchImageCount = 8;
     	int fetchedImages = 0;
@@ -114,7 +114,6 @@ public class SearchActivity extends Activity {
     			@Override
     			public void onSuccess(JSONObject response) {
     				JSONArray jsonArrayImageResults = null;
-    			
     				try {
     					//Get image results from JSON
     					jsonArrayImageResults = response.getJSONObject("responseData").getJSONArray("results");
@@ -131,4 +130,23 @@ public class SearchActivity extends Activity {
     	}
     }
     
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	Intent mySearchIntent = new Intent(getApplicationContext(), SettingsActivity.class);
+		// myIntent.putExtra("fullUrl", imageResult.getFullUrl());
+		// make ImageResult serializable and pass whole imageResult as argument 
+		// myIntent.putExtra("imageResult", imageResult);
+    	  startActivityForResult(mySearchIntent, 1);
+    	return true;
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      if (resultCode == RESULT_OK && requestCode == 1) {
+        if (data.hasExtra("result")) {
+          Toast.makeText(this, data.getExtras().getString("result"),
+            Toast.LENGTH_SHORT).show();
+        }
+      }
+    } 
 }
