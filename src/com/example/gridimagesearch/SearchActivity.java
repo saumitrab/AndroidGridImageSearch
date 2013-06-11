@@ -36,6 +36,7 @@ public class SearchActivity extends Activity {
 	
 	int imageResultStartIndex = 0;
 	int countImages=12;
+	SearchPreferences spObject = new SearchPreferences("","","","");
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +86,7 @@ public class SearchActivity extends Activity {
     	gvResults = (GridView) findViewById(R.id.gvResults);
     	btnSearch = (Button) findViewById(R.id.btnSearch);
     	btnLoadMore = (Button) findViewById(R.id.btnLoadMore);
+    	btnLoadMore.setVisibility(Button.INVISIBLE);
     }
     
     public void onImageSearch(View v) {
@@ -94,6 +96,7 @@ public class SearchActivity extends Activity {
     	imageResultStartIndex = 0;
     	
     	loadImages(query);
+    	btnLoadMore.setVisibility(Button.VISIBLE);
     }
     
     public void loadImages() {
@@ -110,7 +113,23 @@ public class SearchActivity extends Activity {
     	
     	while ( fetchedImages < countImages ) {
     	
-    		ahClient.get("https://ajax.googleapis.com/ajax/services/search/images?rsz=" + fetchImageCount + "&start=" + imageResultStartIndex + "&v=1.0&q=" + Uri.encode(query), new JsonHttpResponseHandler() {    	
+    		String searchQuery = "https://ajax.googleapis.com/ajax/services/search/images?rsz=" + fetchImageCount + "&start=" + imageResultStartIndex + "&v=1.0&q=" + Uri.encode(query);
+    		if (!spObject.getImgsz().isEmpty() && !spObject.getImgsz().equalsIgnoreCase("all")){
+    			searchQuery += "&imgsz=" + spObject.getImgsz();
+    		}
+    		if (!spObject.getImgcolor().isEmpty() && !spObject.getImgcolor().equalsIgnoreCase("all")){
+    			searchQuery += "&imgcolor=" + spObject.getImgcolor();
+    		}
+    		if (!spObject.getImgtype().isEmpty() && !spObject.getImgtype().equalsIgnoreCase("all") ){
+    			searchQuery += "&imgtype=" + spObject.getImgtype();
+    		}
+    		if (!spObject.getas_sitesearch().isEmpty()){
+    			searchQuery += "&as_sitesearch=" + spObject.getas_sitesearch();
+    		}
+    		
+    		Log.d("DEBUGQUERY", searchQuery);
+    		
+    		ahClient.get(searchQuery, new JsonHttpResponseHandler() {    	
     			@Override
     			public void onSuccess(JSONObject response) {
     				JSONArray jsonArrayImageResults = null;
@@ -132,11 +151,9 @@ public class SearchActivity extends Activity {
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-    	Intent mySearchIntent = new Intent(getApplicationContext(), SettingsActivity.class);
-		// myIntent.putExtra("fullUrl", imageResult.getFullUrl());
-		// make ImageResult serializable and pass whole imageResult as argument 
-		// myIntent.putExtra("imageResult", imageResult);
-    	  startActivityForResult(mySearchIntent, 1);
+    	Intent mySettingIntent = new Intent(getApplicationContext(), SettingsActivity.class);
+    	mySettingIntent.putExtra("spObject", spObject);
+    	startActivityForResult(mySettingIntent, 1);
     	return true;
     }
     
@@ -144,8 +161,9 @@ public class SearchActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
       if (resultCode == RESULT_OK && requestCode == 1) {
         if (data.hasExtra("result")) {
-          Toast.makeText(this, data.getExtras().getString("result"),
-            Toast.LENGTH_SHORT).show();
+        	spObject = (SearchPreferences) data.getExtras().getSerializable("result");
+        	//Toast.makeText(this, spObject.getas_sitesearch(), Toast.LENGTH_SHORT).show();
+        	loadImages();
         }
       }
     } 

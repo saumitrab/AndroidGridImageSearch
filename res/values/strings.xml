@@ -9,5 +9,42 @@
     <string name="title_activity_image_display">ImageDisplayActivity</string>
     <string name="load_more_caption">Load More</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    
+    
+    <string name="imgsz_prompt">Image Size</string>
+    <string-array name="imgsz_array">
+        <item>all</item>
+        <item>small</item>
+		<item>medium</item>
+		<item>large</item>
+		<item>xlarge</item>
+    </string-array>
+    
+    <string name="imgcolor_prompt">Color</string>
+    <string-array name="imgcolor_array">
+        <item>all</item>
+        <item>black</item>
+		<item>blue</item>
+		<item>brown</item>
+		<item>gray</item>
+		<item>green</item>
+		<item>orange</item>
+		<item>pink</item>
+		<item>purple</item>
+		<item>red</item>
+		<item>teal</item>
+		<item>white</item>
+		<item>yellow</item>
+    </string-array>
+    
+    <string name="imgtype_prompt">Type</string>
+    <string-array name="imgtype_array">
+        <item>all</item>
+		<item>face</item>
+		<item>photo</item>
+		<item>clipart</item>
+		<item>lineart</item>
+    </string-array>
+    
 
 </resources>
