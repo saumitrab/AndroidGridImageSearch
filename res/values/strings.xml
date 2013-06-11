@@ -7,5 +7,6 @@
     <string name="query_hint">Enter Search Term</string>
     <string name="search_caption">Search</string>
     <string name="title_activity_image_display">ImageDisplayActivity</string>
+    <string name="load_more_caption">Load More</string>
 
 </resources>

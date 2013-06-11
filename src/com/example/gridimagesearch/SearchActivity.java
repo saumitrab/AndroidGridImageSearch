@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -27,11 +28,13 @@ public class SearchActivity extends Activity {
 	EditText etQuery;
 	GridView gvResults;
 	Button   btnSearch;
+	Button   btnLoadMore;
 
 	ArrayList<ImageResult> alImageResult = new ArrayList<ImageResult>();
 	ImageResultArrayAdapter imageAdapter;
 	
-	
+	int imageResultStartIndex = 0;
+	int countImages=12;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +42,7 @@ public class SearchActivity extends Activity {
         setContentView(R.layout.activity_search);
         
         setupViews();
-        
-        
+
         imageAdapter = new ImageResultArrayAdapter(this, alImageResult);
         gvResults.setAdapter(imageAdapter);
         gvResults.setOnItemClickListener(new OnItemClickListener() {
@@ -51,16 +53,21 @@ public class SearchActivity extends Activity {
 				
 				Intent myIntent = new Intent(getApplicationContext(), ImageDisplayActivity.class);
 				// Give ImageDisplayActivity an image to display
-				
 				ImageResult imageResult = alImageResult.get(position);
-				//myIntent.putExtra("fullUrl", imageResult.getFullUrl());
+				// myIntent.putExtra("fullUrl", imageResult.getFullUrl());
 				// make ImageResult serializable and pass whole imageResult as argument 
 				myIntent.putExtra("imageResult", imageResult);
 				
 				startActivity(myIntent);
 			}
-			
-			
+		});
+        
+        btnLoadMore.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				imageResultStartIndex += countImages;
+				loadImages();
+			}
 		});
     }
 
@@ -76,35 +83,52 @@ public class SearchActivity extends Activity {
     	etQuery = (EditText) findViewById(R.id.etQuery);
     	gvResults = (GridView) findViewById(R.id.gvResults);
     	btnSearch = (Button) findViewById(R.id.btnSearch);
+    	btnLoadMore = (Button) findViewById(R.id.btnLoadMore);
     }
     
     public void onImageSearch(View v) {
     	String query = etQuery.getText().toString();
     	Toast.makeText(this, "Searching for " + query, Toast.LENGTH_SHORT).show();
     	
+    	imageResultStartIndex = 0;
+    	
+    	loadImages(query);
+    }
+    
+    public void loadImages() {
+    	String query = etQuery.getText().toString();
+    	loadImages(query);
+    }
+    
+    public void loadImages(String query) {
     	AsyncHttpClient ahClient = new AsyncHttpClient();
     	//https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=dog
     	
-    	ahClient.get("https://ajax.googleapis.com/ajax/services/search/images?rsz=8&start=" + 0 + "&v=1.0&q=" + Uri.encode(query), new JsonHttpResponseHandler() {
-    	//ahClient.get("https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + Uri.encode(query), new JsonHttpResponseHandler() {
-    		@Override
-    		public void onSuccess(JSONObject response) {
-    			JSONArray jsonArrayImageResults = null;
+    	int fetchImageCount = 8;
+    	int fetchedImages = 0;
+    	alImageResult.clear();
+    	
+    	while ( fetchedImages < countImages ) {
+    	
+    		ahClient.get("https://ajax.googleapis.com/ajax/services/search/images?rsz=" + fetchImageCount + "&start=" + imageResultStartIndex + "&v=1.0&q=" + Uri.encode(query), new JsonHttpResponseHandler() {    	
+    			@Override
+    			public void onSuccess(JSONObject response) {
+    				JSONArray jsonArrayImageResults = null;
     			
-    			try {
-    				//Get image results from JSON
-    				jsonArrayImageResults = response.getJSONObject("responseData").getJSONArray("results");
-    				alImageResult.clear();
-    				
-    				// change alImageResult.addAll to imageAdapter.addAll
-    				imageAdapter.addAll(ImageResult.fromJSONArray(jsonArrayImageResults));
-    				
-    				Log.d("DEBUG", alImageResult.toString());
-    			} catch (Exception e) {
-    				e.printStackTrace();
+    				try {
+    					//Get image results from JSON
+    					jsonArrayImageResults = response.getJSONObject("responseData").getJSONArray("results");
+    					// change alImageResult.addAll to imageAdapter.addAll
+    					imageAdapter.addAll(ImageResult.fromJSONArray(jsonArrayImageResults));
+    					Log.d("DEBUG", alImageResult.toString());
+    				} catch (Exception e) {
+    					e.printStackTrace();
+    				}
     			}
-    		}
-    	});
+    		});
+    		fetchedImages += fetchImageCount;
+    		fetchImageCount = (countImages - 8 ) > 8 ? 8 : countImages-8;  
+    	}
     }
     
 }
